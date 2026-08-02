@@ -37,10 +37,14 @@ entire reason this path exists — the app cannot read a cross-origin page, so a
 Description can only come from here.
 
 1. Fetch the page with WebFetch.
-2. Write the Description yourself: one or two sentences, plain, concrete, in
-   the user's language. Say what the page *is* and what it argues or offers —
-   not "this article discusses". Never invent facts the page does not carry.
-3. Take the Title verbatim from the page. Never invent or improve it.
+2. Write the Description yourself: one or two sentences, plain, concrete. Say
+   what the page *is* and what it argues or offers — not "this article
+   discusses". Never invent facts the page does not carry.
+3. **Always write the Description in English**, whatever language the page is
+   in and whatever language the user is speaking. A Dutch page gets an English
+   Description. This keeps the list scannable as one thing.
+4. Take the Title verbatim from the page. Never invent or improve it — the
+   Title stays in the page's own language.
 
 ```bash
 node .claude/skills/reading-list/list.mjs add "https://example.com/post" \
@@ -60,7 +64,8 @@ Items captured on the phone arrive with no Description. Fill them in:
 node .claude/skills/reading-list/list.mjs missing --json
 ```
 
-Then, for each one, fetch the page and:
+Then, for each one, fetch the page and write the Description the same way
+Capture does — plain, concrete, and in English whatever the page's language:
 
 ```bash
 node .claude/skills/reading-list/list.mjs describe "https://example.com/post" \
@@ -87,7 +92,7 @@ it forever in the Archive; Remove does not. Never run `remove` because the user
 said they finished something — confirm first if the wording is at all
 ambiguous.
 
-## Language
+## Vocabulary
 
 Use the app's words when you talk to the user: Item, Capture, Backfill, Read,
 Remove, Star, Reading List, Archive, Description, Title. Say "Captured", not
