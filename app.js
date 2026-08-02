@@ -7,7 +7,7 @@ import { foldAll, op } from './lib/fold.js';
 import { commit } from './lib/sync.js';
 import { githubTransport, AuthError } from './lib/github.js';
 import { settings, queue, cache } from './lib/local.js';
-import { displayHost } from './lib/normalize.js';
+import { displayHost, normalizeUrl } from './lib/normalize.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -28,6 +28,7 @@ const dom = {
   captureDialog: el('capture-dialog'),
   captureForm: el('capture-form'),
   captureError: el('capture-error'),
+  captureSource: el('capture-source'),
   settingsDialog: el('settings-dialog'),
   settingsForm: el('settings-form'),
   settingsError: el('settings-error'),
@@ -302,20 +303,78 @@ dom.toggleArchive.addEventListener('click', () => {
 
 /* ── Capture ────────────────────────────────────────────────────────────── */
 
-el('capture').addEventListener('click', async () => {
+function openCapture({ url = '', title = '', fromClipboard = false } = {}) {
   dom.captureError.hidden = true;
   dom.captureForm.reset();
-  dom.captureDialog.showModal();
+  dom.captureSource.hidden = !fromClipboard;
+  el('capture-url').value = url;
+  el('capture-title').value = title;
+  if (!dom.captureDialog.open) dom.captureDialog.showModal();
+  // With a URL already in hand, the next thing you might type is the Title.
+  (url ? el('capture-title') : el('capture-url')).focus();
+}
+
+el('capture').addEventListener('click', async () => {
+  openCapture();
   // A URL is almost always already on the clipboard when you reach for this.
-  try {
-    const text = await navigator.clipboard?.readText();
-    const field = el('capture-url');
-    if (!field.value && text && /^https?:\/\/\S+$/i.test(text.trim())) field.value = text.trim();
-  } catch {
-    // No clipboard permission. Typing works.
-  }
-  el('capture-url').focus();
+  const url = await clipboardUrl();
+  const field = el('capture-url');
+  // The read is async — do not yank the field out from under someone typing.
+  if (!url || field.value || document.activeElement !== field) return;
+  field.value = url;
+  el('capture-title').focus();
 });
+
+/** The clipboard's contents, if they are a single web URL and nothing else. */
+async function clipboardUrl() {
+  try {
+    const text = (await navigator.clipboard?.readText())?.trim();
+    if (!text || !/^https?:\/\/\S+$/i.test(text)) return null;
+    return normalizeUrl(text);
+  } catch {
+    // No clipboard permission, or the page is not focused. Typing works.
+    return null;
+  }
+}
+
+/* On arriving at the list with a URL on the clipboard — the usual way a page
+ * gets here from a browser on the same machine — offer to Capture it, rather
+ * than making you press Capture to be told what you already know. Offered
+ * once per URL: declining, or Capturing, settles it for this tab. */
+
+const OFFERED = 'readinglist.clipboardOffered';
+const offered = {
+  get: () => {
+    try {
+      return sessionStorage.getItem(OFFERED);
+    } catch {
+      return null;
+    }
+  },
+  set: (url) => {
+    try {
+      sessionStorage.setItem(OFFERED, url);
+    } catch {
+      // Storage blocked. Worst case the offer comes back on the next visit.
+    }
+  },
+};
+
+async function offerClipboardCapture() {
+  if (!settings.configured()) return;
+  if (document.querySelector('dialog[open]')) return;
+  if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+
+  const url = await clipboardUrl();
+  if (!url || url === offered.get()) return;
+  // Already on the list — there is nothing to offer.
+  if (view().some((item) => item.url === url)) return;
+  // The read is async; the ground may have moved under it.
+  if (document.querySelector('dialog[open]')) return;
+
+  offered.set(url);
+  openCapture({ url, fromClipboard: true });
+}
 
 dom.captureForm.addEventListener('submit', (event) => {
   const data = new FormData(dom.captureForm);
@@ -401,8 +460,14 @@ window.addEventListener('online', () => {
 window.addEventListener('offline', () => setSync('offline'));
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') refresh();
+  if (document.visibilityState !== 'visible') return;
+  refresh();
+  offerClipboardCapture();
 });
+
+// Coming back from the browser window you copied the URL in does not always
+// count as a visibility change; regaining focus does.
+window.addEventListener('focus', () => offerClipboardCapture());
 
 // Keep "synced 3m ago" honest without re-reading the list.
 setInterval(() => {
@@ -416,10 +481,16 @@ else openSettings();
 // The home-screen shortcut and the Mac bookmarklet both land here.
 const launch = new URLSearchParams(location.search);
 if (settings.configured() && (launch.has('capture') || launch.has('url'))) {
-  el('capture').click();
-  if (launch.has('url')) el('capture-url').value = launch.get('url');
-  if (launch.has('title')) el('capture-title').value = launch.get('title');
+  if (launch.has('url')) {
+    openCapture({ url: launch.get('url'), title: launch.get('title') || '' });
+  } else {
+    el('capture').click();
+  }
   history.replaceState(null, '', location.pathname);
+} else if (settings.configured()) {
+  // Arriving at the list with a URL already copied is itself the intent to
+  // Capture it. Ask, once, instead of waiting to be asked.
+  offerClipboardCapture();
 }
 
 if ('serviceWorker' in navigator) {
