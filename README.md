@@ -50,6 +50,13 @@ not trigger a Pages rebuild.
 Push this repo to GitHub and turn on Pages (Settings → Pages → deploy from
 branch, root). There is no build step; the files are served as they are.
 
+The site is normally at `https://<owner>.github.io/<repo>/`. If the account
+already serves a Pages site on a custom domain, project sites inherit it
+instead — this one is deployed at **https://hoopyfrood.dev/reading-list/**.
+Whichever it is, that URL is what goes into Settings, the phone's home screen,
+and the bookmarklet below. `gh api repos/<owner>/<repo>/pages --jq .html_url`
+tells you which you got.
+
 ### 3. The token
 
 Create a **fine-grained** personal access token
@@ -75,7 +82,7 @@ empty until you Backfill it from the Mac.
 
 ```bash
 brew install gh && gh auth login
-node .claude/skills/reading-list/list.mjs where <owner>/reading-list-data links.md
+node .claude/skills/reading-list/list.mjs where hoopyfroody/reading-list-data links.md
 ```
 
 The Skill authenticates as you, through `gh` — it never sees the browser's
@@ -86,7 +93,7 @@ Mac. Then, in Claude Code: *"save https://… to my reading list"*, or
 ### A bookmarklet, if the Skill is too heavy on the desktop
 
 ```javascript
-javascript:location.href='https://<owner>.github.io/<repo>/?url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)
+javascript:location.href='https://hoopyfrood.dev/reading-list/?url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title)
 ```
 
 ## Working on it
