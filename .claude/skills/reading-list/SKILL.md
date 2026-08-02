@@ -58,17 +58,21 @@ user the Description is missing.
 
 ## Backfill
 
-Items captured on the phone arrive with no Description. Fill them in:
+Items captured on the phone arrive with no Description, and their Title is
+just the raw URL. Fill in both:
 
 ```bash
 node .claude/skills/reading-list/list.mjs missing --json
 ```
 
-Then, for each one, fetch the page and write the Description the same way
-Capture does — plain, concrete, and in English whatever the page's language:
+Then, for each one, fetch the page and write the Title and Description the
+same way Capture does: Title verbatim from the page, Description plain,
+concrete, and in English whatever the page's language. **Always pass
+`--title`** — omitting it leaves the URL as the Title.
 
 ```bash
 node .claude/skills/reading-list/list.mjs describe "https://example.com/post" \
+  --title "The exact page title" \
   --description "What it is, in a sentence or two."
 ```
 
