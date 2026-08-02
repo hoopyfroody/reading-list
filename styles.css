@@ -1,0 +1,608 @@
+/* Reading list
+   ─────────────────────────────────────────────────────────────────────────
+   The list is a file. The interface admits it: a masthead that reads like a
+   file header, items as ruled lines rather than cards, and a ledger of
+   pending operations that drains as they land.
+
+   Three type roles: sans for titles (the thing you scan), serif for
+   descriptions (the thing you read), mono for anything the machine knows —
+   hosts, counts, ops, the filename. All system faces, so the app is whole
+   with no network. */
+
+:root {
+  --paper: #eef0f3;
+  --paper-sunk: #e6e9ee;
+  --ink: #14181f;
+  --ink-soft: #5a6472;
+  --ink-faint: #8a93a1;
+  --rule: #d6dae1;
+  --rule-strong: #c2c8d2;
+  --accent: #2f3fe0;
+  --accent-soft: #dfe2fb;
+  --star: #b5610b;
+  --danger: #b02418;
+
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Source Serif 4', Georgia, serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  --measure: 46rem;
+  --gutter: 2.25rem;
+  --step: 0.75rem;
+  --radius: 0.375rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #10131a;
+    --paper-sunk: #171b24;
+    --ink: #e7eaf0;
+    --ink-soft: #9aa3b3;
+    --ink-faint: #6b7484;
+    --rule: #232936;
+    --rule-strong: #313a4b;
+    --accent: #94a0ff;
+    --accent-soft: #1d2440;
+    --star: #e9a63f;
+    --danger: #ef7264;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 1.25rem calc(4rem + env(safe-area-inset-bottom));
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body > *,
+main > * {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr,
+.skip:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip:focus {
+  position: fixed;
+  inset: 0.5rem auto auto 0.5rem;
+  z-index: 20;
+  padding: 0.5rem 0.75rem;
+  background: var(--paper);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+/* ── Masthead ───────────────────────────────────────────────────────────── */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-top: calc(1.5rem + env(safe-area-inset-top));
+  background: var(--paper);
+}
+
+/* Items pass under the masthead rather than colliding with it. */
+.masthead::after {
+  content: '';
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 1.25rem;
+  background: linear-gradient(var(--paper), transparent);
+  pointer-events: none;
+}
+
+main section {
+  scroll-margin-top: 7rem;
+}
+
+.masthead-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.15rem + 1.4vw, 2rem);
+  font-weight: 680;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+}
+
+.masthead-actions {
+  display: flex;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+/* The status line reads like the header of the file it is: what, how much,
+   how fresh. */
+.ledger-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding-bottom: 0.75rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--rule);
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.dot[data-state='synced'] {
+  background: var(--accent);
+}
+.dot[data-state='pending'] {
+  background: var(--star);
+}
+.dot[data-state='offline'],
+.dot[data-state='error'] {
+  background: var(--danger);
+}
+.dot[data-state='syncing'] {
+  background: var(--accent);
+  animation: pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* ── The queue ──────────────────────────────────────────────────────────── */
+/* Pending ops, in the vocabulary the app actually uses. You can always tell
+   "saved" from "saved here, not yet pushed". */
+
+.queue {
+  margin: 0;
+  padding: 0.5rem 0 0.75rem;
+  list-style: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.queue li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.15rem 0;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  animation: slide-in 0.22s ease-out;
+}
+
+.queue li .op {
+  color: var(--ink);
+  font-weight: 600;
+  min-width: 4.25rem;
+}
+
+.queue li .target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue li.settled {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.15s;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 2rem 0 0;
+  padding-bottom: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+#list .section-heading {
+  /* The Reading list is the default view; it needs no announcement. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+/* ── Items ──────────────────────────────────────────────────────────────── */
+
+.items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr;
+  padding: var(--step) 0;
+  border-bottom: 1px solid var(--rule);
+  animation: fade-in 0.25s ease-out;
+}
+
+.item:first-child {
+  border-top: 1px solid var(--rule);
+}
+
+/* Starred Items are pinned above the rest; the rule below the last one is
+   heavier, so the pinning is visible rather than merely true. */
+.item.last-starred {
+  border-bottom: 1px solid var(--rule-strong);
+  box-shadow: 0 1px 0 var(--rule-strong);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+}
+
+.gutter {
+  padding-top: 0.05rem;
+}
+
+.star {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--rule);
+  font-size: 1rem;
+  line-height: 1.75rem;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star:hover {
+  color: var(--ink-faint);
+}
+
+.star[aria-pressed='true'] {
+  color: var(--star);
+}
+
+.star:active {
+  transform: scale(0.86);
+}
+
+.title {
+  display: block;
+  color: inherit;
+  font-size: 1.0625rem;
+  font-weight: 570;
+  letter-spacing: -0.012em;
+  line-height: 1.32;
+  text-decoration: none;
+  text-underline-offset: 0.14em;
+  text-decoration-thickness: 1px;
+}
+
+.title:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.host {
+  margin: 0.2rem 0 0;
+  color: var(--ink-faint);
+}
+
+.description {
+  margin: 0.35rem 0 0;
+  max-width: 38rem;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.item.no-description .description {
+  display: none;
+}
+
+/* Actions stay out of the way until you mean them. On touch, where there is
+   no hover, they sit under the item and are always there. */
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.45rem 0 0 -0.5rem;
+}
+
+@media (min-width: 40rem) {
+  /* Out of the vertical rhythm entirely, so a row with no Description is
+     short rather than mysteriously empty. */
+  .actions {
+    position: absolute;
+    top: calc(var(--step) - 0.06rem);
+    right: 0;
+    margin: 0;
+  }
+  /* Keep the longest title clear of the buttons it would otherwise run under. */
+  .body {
+    padding-right: 9.5rem;
+  }
+}
+
+@media (hover: hover) and (min-width: 40rem) {
+  .actions {
+    opacity: 0;
+    transition: opacity 0.14s ease;
+  }
+  .item:hover .actions,
+  .item:focus-within .actions {
+    opacity: 1;
+  }
+}
+
+.item.read .title {
+  color: var(--ink-soft);
+  font-weight: 480;
+}
+
+.empty {
+  margin: 2.5rem 0;
+  max-width: 30rem;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.archive-toggle {
+  margin: 1.75rem 0 0;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+.button {
+  appearance: none;
+  padding: 0.34rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.button:hover {
+  color: var(--ink);
+  background: var(--paper-sunk);
+}
+
+.button-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.button-primary:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.button-quiet {
+  border-color: transparent;
+}
+
+.button-danger-quiet {
+  color: var(--danger);
+}
+
+.button-danger-quiet:hover {
+  background: var(--paper-sunk);
+  color: var(--danger);
+}
+
+.button[aria-expanded='true'] {
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ── Sheets ─────────────────────────────────────────────────────────────── */
+
+.sheet {
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: 0.75rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.sheet::backdrop {
+  background: rgb(10 13 18 / 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.sheet form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem;
+}
+
+.sheet h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+
+.sheet-intro {
+  margin: -0.25rem 0 0;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.sheet label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sheet label em {
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+.field-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper-sunk);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: normal;
+  resize: vertical;
+}
+
+#capture-url,
+#settings-token,
+#settings-path {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+  border-color: var(--accent);
+}
+
+.sheet-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.sheet-actions .spacer {
+  flex: 1;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+/* ── Colophon ───────────────────────────────────────────────────────────── */
+
+.colophon {
+  margin-top: 3rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

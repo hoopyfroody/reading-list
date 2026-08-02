@@ -1,0 +1,151 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#eef0f3" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#10131a" media="(prefers-color-scheme: dark)" />
+<title>Reading list</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icons/icon-192.png" />
+<link rel="stylesheet" href="./styles.css" />
+
+<a class="skip" href="#list">Skip to the list</a>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <h1>Reading&nbsp;list</h1>
+    <div class="masthead-actions">
+      <button type="button" id="capture" class="button button-primary">Capture</button>
+      <button type="button" id="open-settings" class="button button-quiet" aria-label="Settings">Settings</button>
+    </div>
+  </div>
+
+  <p class="ledger-line" id="status" aria-live="polite">
+    <span class="dot" data-state="idle"></span>
+    <span id="status-text">Reading the list…</span>
+  </p>
+
+  <!-- The queue: every action is an operation, held here until it lands. -->
+  <ol class="queue" id="queue" aria-label="Changes not yet pushed" hidden></ol>
+</header>
+
+<main>
+  <section id="list" aria-labelledby="list-heading">
+    <h2 class="section-heading" id="list-heading">
+      <span>Reading list</span>
+      <span class="count" id="unread-count"></span>
+    </h2>
+    <ol class="items" id="items"></ol>
+    <p class="empty" id="empty" hidden>
+      Nothing to read. Capture a page from the Mac with the Skill, or share one to this app from
+      your phone.
+    </p>
+  </section>
+
+  <section id="archive-section" aria-labelledby="archive-heading" hidden>
+    <h2 class="section-heading" id="archive-heading">
+      <span>Archive</span>
+      <span class="count" id="archive-count"></span>
+    </h2>
+    <ol class="items" id="archive-items"></ol>
+  </section>
+
+  <p class="archive-toggle">
+    <button type="button" id="toggle-archive" class="button button-quiet" aria-expanded="false">
+      Show archive
+    </button>
+  </p>
+</main>
+
+<footer class="colophon">
+  <span id="file-line" class="mono"></span>
+</footer>
+
+<!-- Capture -->
+<dialog id="capture-dialog" class="sheet">
+  <form method="dialog" id="capture-form">
+    <h2>Capture a page</h2>
+    <label>
+      <span>URL</span>
+      <input type="url" name="url" id="capture-url" required inputmode="url" placeholder="https://" autocomplete="off" spellcheck="false" />
+    </label>
+    <label>
+      <span>Title <em>optional</em></span>
+      <input type="text" name="title" id="capture-title" autocomplete="off" />
+    </label>
+    <label>
+      <span>Description <em>optional — the Skill can fill this in later</em></span>
+      <textarea name="description" id="capture-description" rows="3"></textarea>
+    </label>
+    <p class="form-error" id="capture-error" hidden></p>
+    <div class="sheet-actions">
+      <button type="button" class="button button-quiet" data-close>Cancel</button>
+      <button type="submit" class="button button-primary">Capture</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Settings -->
+<dialog id="settings-dialog" class="sheet">
+  <form method="dialog" id="settings-form">
+    <h2>Where the list lives</h2>
+    <p class="sheet-intro">
+      The list is a markdown file in a private GitHub repo. Paste a fine-grained token with
+      <span class="mono">contents: read and write</span> on that repo — nothing else. It is stored
+      on this device only.
+    </p>
+    <div class="field-row">
+      <label>
+        <span>Owner</span>
+        <input type="text" name="owner" id="settings-owner" required autocomplete="off" spellcheck="false" placeholder="your-github-name" />
+      </label>
+      <label>
+        <span>Repo</span>
+        <input type="text" name="repo" id="settings-repo" required autocomplete="off" spellcheck="false" placeholder="reading-list-data" />
+      </label>
+    </div>
+    <div class="field-row">
+      <label>
+        <span>File</span>
+        <input type="text" name="path" id="settings-path" required autocomplete="off" spellcheck="false" />
+      </label>
+      <label>
+        <span>Branch</span>
+        <input type="text" name="branch" id="settings-branch" required autocomplete="off" spellcheck="false" />
+      </label>
+    </div>
+    <label>
+      <span>Token</span>
+      <input type="password" name="token" id="settings-token" required autocomplete="off" spellcheck="false" placeholder="github_pat_…" />
+    </label>
+    <p class="form-error" id="settings-error" hidden></p>
+    <div class="sheet-actions">
+      <button type="button" class="button button-danger-quiet" id="forget-device">Forget this device</button>
+      <span class="spacer"></span>
+      <button type="button" class="button button-quiet" data-close>Cancel</button>
+      <button type="submit" class="button button-primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<template id="item-template">
+  <li class="item">
+    <div class="gutter">
+      <button type="button" class="star" aria-pressed="false" title="Star">
+        <span aria-hidden="true">★</span>
+        <span class="sr">Star</span>
+      </button>
+    </div>
+    <div class="body">
+      <a class="title" target="_blank" rel="noreferrer noopener"></a>
+      <p class="host mono"></p>
+      <p class="description"></p>
+      <div class="actions">
+        <button type="button" class="button button-quiet" data-action="read"></button>
+        <button type="button" class="button button-quiet" data-action="remove">Remove</button>
+      </div>
+    </div>
+  </li>
+</template>
+
+<script type="module" src="./app.js"></script>

@@ -1,0 +1,52 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#eef0f3" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#10131a" media="(prefers-color-scheme: dark)" />
+<title>Capture · Reading list</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="./styles.css" />
+
+<header class="masthead">
+  <div class="masthead-row">
+    <h1>Captured</h1>
+  </div>
+  <p class="ledger-line" id="status" aria-live="polite">
+    <span class="dot" data-state="pending"></span>
+    <span id="status-text">Adding to the list…</span>
+  </p>
+</header>
+
+<main>
+  <ol class="items" id="preview"></ol>
+
+  <p class="capture-note" id="note"></p>
+
+  <p class="done-actions">
+    <a class="button button-primary" href="./">Open the reading list</a>
+    <button type="button" class="button button-quiet" id="undo">Undo</button>
+  </p>
+</main>
+
+<style>
+  .capture-note {
+    margin: 1.5rem 0 0;
+    max-width: 32rem;
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .done-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  a.button {
+    text-decoration: none;
+    display: inline-block;
+  }
+</style>
+
+<script type="module" src="./add.js"></script>

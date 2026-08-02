@@ -1,0 +1,12 @@
+{
+  "name": "reading-list",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A single-user list of web pages to read later. Static site on GitHub Pages, backed by a markdown file in a private repo.",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "serve": "node tools/serve.mjs",
+    "icons": "node tools/make-icons.mjs"
+  }
+}
