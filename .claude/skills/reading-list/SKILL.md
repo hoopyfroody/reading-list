@@ -37,9 +37,10 @@ entire reason this path exists — the app cannot read a cross-origin page, so a
 Description can only come from here.
 
 1. Fetch the page with WebFetch.
-2. Write the Description yourself: one or two sentences, plain, concrete. Say
-   what the page *is* and what it argues or offers — not "this article
-   discusses". Never invent facts the page does not carry.
+2. Write the Description yourself: at most two sentences, plain, concrete.
+   Never write a third sentence. Say what the page *is* and what it argues or
+   offers — not "this article discusses". Never invent facts the page does
+   not carry.
 3. **Always write the Description in English**, whatever language the page is
    in and whatever language the user is speaking. A Dutch page gets an English
    Description. This keeps the list scannable as one thing.
@@ -66,9 +67,9 @@ node .claude/skills/reading-list/list.mjs missing --json
 ```
 
 Then, for each one, fetch the page and write the Title and Description the
-same way Capture does: Title verbatim from the page, Description plain,
-concrete, and in English whatever the page's language. **Always pass
-`--title`** — omitting it leaves the URL as the Title.
+same way Capture does: Title verbatim from the page, Description at most two
+sentences, plain, concrete, and in English whatever the page's language.
+**Always pass `--title`** — omitting it leaves the URL as the Title.
 
 ```bash
 node .claude/skills/reading-list/list.mjs describe "https://example.com/post" \
