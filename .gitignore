@@ -1,2 +1,5 @@
 .DS_Store
 node_modules/
+
+# Build product — run tools/build-notifier.sh
+tools/ReadingListNotifier.app/

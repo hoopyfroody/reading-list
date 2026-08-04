@@ -12,8 +12,16 @@ LOG="$HOME/Library/Logs/reading-list-backfill.log"
 
 export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
+# Posted through our own app bundle, not bare osascript. A notification is
+# attributed to a host app; osascript under launchd has none, so macOS accepts
+# the call and drops the banner without error. See tools/notifier.applescript.
+NOTIFIER="/Users/matthijshakfoort/CODE/reading-list-design/tools/ReadingListNotifier.app"
+PAYLOAD="$HOME/Library/Application Support/reading-list/notification.txt"
+
 notify() {
-  osascript -e "display notification \"$2\" with title \"$1\"" >/dev/null 2>&1
+  mkdir -p "${PAYLOAD:h}"
+  printf '%s\n%s\n' "$1" "$2" >"$PAYLOAD"
+  open -a "$NOTIFIER"
 }
 
 state=$(launchctl print "gui/$(id -u)/$LABEL" 2>/dev/null)
