@@ -1,7 +1,7 @@
 ---
 name: reading-list
 description: Capture a web page to the reading list with a generated Description, backfill Descriptions for pages captured on the phone, or mark items read, starred or removed. Use when the user asks to save/read later/add a link, or says "backfill", "what's on my reading list", "mark X as read".
-allowed-tools: Bash, WebFetch
+allowed-tools: Bash, WebFetch, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__get_page_text
 ---
 
 # Reading list
@@ -56,6 +56,22 @@ node .claude/skills/reading-list/list.mjs add "https://example.com/post" \
 If the page cannot be fetched (paywall, login, dead host), capture it anyway
 with just the URL and whatever title you can honestly attribute, and tell the
 user the Description is missing.
+
+**Medium is a special case.** WebFetch hits Medium's login-wall redirect loop
+(medium.com → the publication's custom domain → back to medium.com/m/global-identity-2)
+and never reaches the article. Before giving up, try the user's actual browser
+session instead — they may be logged in there:
+
+```
+mcp__claude-in-chrome__tabs_context_mcp   (createIfEmpty: true)
+mcp__claude-in-chrome__navigate           (the article URL)
+mcp__claude-in-chrome__get_page_text      (reads the rendered article text)
+```
+
+This reads through the user's real login, so it clears the paywall for
+subscriber content. Write the Title and Description from that text the same
+way as any other Capture. If the browser tools aren't available or the article
+still isn't reachable, fall back to the URL-only capture above.
 
 ## Backfill
 
