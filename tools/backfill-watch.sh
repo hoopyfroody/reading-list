@@ -30,6 +30,8 @@ count=$(print -r -- "$missing" | node -e '
 
 log "Backfilling $count Item(s)"
 claude -p "/reading-list backfill" \
+  --model claude-sonnet-5 \
+  --effort medium \
   --allowedTools "Bash(node .claude/skills/reading-list/list.mjs:*)" "WebFetch" \
   >>"$LOG" 2>&1
 status=$?
