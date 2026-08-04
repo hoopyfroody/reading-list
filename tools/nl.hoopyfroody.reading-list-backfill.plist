@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>nl.hoopyfroody.reading-list-backfill</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/matthijshakfoort/CODE/reading-list-design/tools/backfill-watch.sh</string>
+  </array>
+
+  <!-- Checks every 10 minutes. The check is one gh read; Claude only starts
+       when there is an Item with no Description. -->
+  <key>StartInterval</key>
+  <integer>600</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/matthijshakfoort/Library/Logs/reading-list-backfill.err</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>
