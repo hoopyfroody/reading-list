@@ -30,13 +30,16 @@ If `gh` is missing or unauthenticated the script says so. The fix is
 authenticated, in practice the Mac. Do not try to work around that; Capture
 from the phone goes through the app's share sheet instead.
 
-A scheduled cloud routine cannot host Backfill, and this was measured rather
-than assumed: the sandbox has no `gh` binary, its `GH_TOKEN`/`GITHUB_TOKEN`
-are 14-character placeholders, and `api.github.com` answers 403 — *"GitHub
-access is not enabled for this session"* — even for the public repo the
-session is scoped to. There is no credential to supply, so a rewrite of the
-transport would not help. Unattended Backfill has to run somewhere holding a
-real GitHub login, which today means the Mac.
+Unattended Backfill does not run here at all. It runs in GitHub Actions, in
+the data repo — see `.github/workflows/backfill.yml` there. A phone Capture
+commits `links.md`, and that commit is the trigger, so an Item usually has its
+Description within a minute of being Captured and nothing has to be awake.
+`gh` and `node` are preinstalled on the runner and `gh` authenticates from the
+per-run `GITHUB_TOKEN`, so this same script runs there unmodified.
+
+A scheduled *cloud routine* is not the place for it: that sandbox has no `gh`
+binary and reaches GitHub only through the Claude GitHub App, not through a
+credential a script can use.
 
 ## Capture
 
@@ -104,6 +107,10 @@ node .claude/skills/reading-list/list.mjs describe "https://example.com/post" \
 Work through them one at a time and report what you filled in. If the user
 asks to backfill "the list" without qualification, do all of them, and say
 which ones you could not reach.
+
+Usually there is nothing to do, because the Action in the data repo has
+already been through the list. Say so plainly rather than treating an empty
+worklist as a problem.
 
 ## The rest
 

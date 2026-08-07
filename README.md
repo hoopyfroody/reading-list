@@ -75,8 +75,10 @@ device.
 
 Open the site in Chrome on Android and install it to the home screen. The
 Share Target only appears in the system share sheet once the PWA is installed.
-Sharing a page then Captures URL and Title in two taps; the Description stays
-empty until you Backfill it from the Mac.
+Sharing a page then Captures URL and Title in two taps. The Description
+arrives about a minute later: the Capture commits `links.md`, and that commit
+triggers `.github/workflows/backfill.yml` in the data repo, which Backfills it
+without the Mac being involved.
 
 ### 5. The Skill
 
