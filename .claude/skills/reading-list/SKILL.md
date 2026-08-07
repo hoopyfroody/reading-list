@@ -25,10 +25,19 @@ node .claude/skills/reading-list/list.mjs where            # shows it
 node .claude/skills/reading-list/list.mjs where me/reading-list-data links.md
 ```
 
-If `gh` is missing or unauthenticated the script says so. The fix is
-`brew install gh && gh auth login` — this skill only works where `gh` is
-authenticated, in practice the Mac. Do not try to work around that; Capture
-from the phone goes through the app's share sheet instead.
+If `gh` is missing or unauthenticated the script says so. On the Mac, the fix
+is `brew install gh && gh auth login` — Capture from the phone goes through
+the app's share sheet instead, so it never needs this.
+
+Backfill can also run unattended from a scheduled cloud routine: `gh`
+authenticates itself from whatever GitHub access the routine's environment
+already has (its `GH_TOKEN`, or the repos granted to it as sources) — no
+separate PAT to create or keep in sync. A cloud run still needs the data repo
+pointed at explicitly, since there is no `~/.config` from a previous run:
+
+```bash
+node .claude/skills/reading-list/list.mjs where hoopyfroody/reading-list-data links.md
+```
 
 ## Capture
 
