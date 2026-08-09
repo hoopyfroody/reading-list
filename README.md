@@ -79,7 +79,8 @@ Sharing a page then Captures URL and Title in two taps. The Description
 arrives about a minute later: the Capture commits `links.md`, and that commit
 triggers `.github/workflows/captured.yml` in the data repo, which in turn
 triggers `backfill.yml`, which Backfills it without the Mac being involved.
-The relay exists because `claude-code-action` refuses to run on a `push`.
+The relay exists because `claude-code-action` refuses to run on a `push` —
+see [ADR-0005](./docs/adr/0005-backfill-triggered-by-workflow-run-relay.md).
 
 ### 5. The Skill
 
