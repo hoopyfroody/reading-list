@@ -58,7 +58,12 @@ Description can only come from here.
    in and whatever language the user is speaking. A Dutch page gets an English
    Description. This keeps the list scannable as one thing.
 4. Take the Title verbatim from the page. Never invent or improve it — the
-   Title stays in the page's own language.
+   Title stays in the page's own language. Take only the part that *names* the
+   page, though: many pages append a gloss after a separator, and a GitHub repo
+   titles itself `owner/repo: <the entire repo description>`. The Title there
+   is `owner/repo`; the description belongs in the Description, if anywhere.
+   The script shortens anything over 80 characters anyway, so a Title that
+   comes back with a `…` on the end means you passed a paragraph.
 
 ```bash
 node .claude/skills/reading-list/list.mjs add "https://example.com/post" \

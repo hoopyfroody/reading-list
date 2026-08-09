@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { normalizeUrl, firstUrlIn } from '../lib/normalize.js';
 import { parse, serialize } from '../lib/markdown.js';
 import { fold, foldAll, op } from '../lib/fold.js';
+import { tidyTitle } from '../lib/title.js';
 import { commit, StaleError, messageFor } from '../lib/sync.js';
 
 /* ── Normalized URL is identity ─────────────────────────────────────────── */
@@ -174,6 +175,38 @@ test('remove destroys the record; a later replay does not resurrect it', () => {
   const ops = [add('https://example.com/a', { title: 'A' }), op('remove', 'https://example.com/a')];
   assert.deepEqual(foldAll([], ops), []);
   assert.deepEqual(foldAll(foldAll([], ops), ops), []);
+});
+
+/* ── Titles stay scannable ──────────────────────────────────────────────── */
+
+const GITHUB_TITLE =
+  'eugeniughelbur/obsidian-second-brain: Persistent memory for Claude Code and 6 other CLI agents, stored as plain markdown in your Obsidian vault.';
+
+test('a short Title is left exactly as the page wrote it', () => {
+  assert.equal(tidyTitle('The End of No Code'), 'The End of No Code');
+  assert.equal(tidyTitle('Reasonix — DeepSeek-native coding agent for your terminal'), 'Reasonix — DeepSeek-native coding agent for your terminal');
+});
+
+test('an over-long Title loses the gloss after the separator', () => {
+  assert.equal(tidyTitle(GITHUB_TITLE), 'eugeniughelbur/obsidian-second-brain');
+});
+
+test('a Title with no separator is cut at a word boundary and marked', () => {
+  const title = tidyTitle(`Why ${'everything '.repeat(12)}matters`);
+  assert.ok(title.length <= 81, title);
+  assert.ok(title.endsWith('…'));
+  assert.ok(!title.includes('  '));
+});
+
+test('a stubby head is not mistaken for the Title', () => {
+  // "Rust" alone would say nothing; the cut falls back to the length rule.
+  const title = tidyTitle(`Rust: ${'a systems language for the long haul '.repeat(4)}`);
+  assert.ok(title.startsWith('Rust: a systems'), title);
+});
+
+test('folding tidies the Title on every Capture path', () => {
+  const items = fold([], add('https://github.com/eugeniughelbur/obsidian-second-brain', { title: GITHUB_TITLE }));
+  assert.equal(items[0].title, 'eugeniughelbur/obsidian-second-brain');
 });
 
 /* ── Replay onto fresh state ────────────────────────────────────────────── */
