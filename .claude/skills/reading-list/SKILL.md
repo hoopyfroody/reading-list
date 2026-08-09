@@ -32,8 +32,10 @@ from the phone goes through the app's share sheet instead.
 
 Unattended Backfill does not run here at all. It runs in GitHub Actions, in
 the data repo — see `.github/workflows/backfill.yml` there. A phone Capture
-commits `links.md`, and that commit is the trigger, so an Item usually has its
-Description within a minute of being Captured and nothing has to be awake.
+commits `links.md`; that commit runs `captured.yml`, whose completion is what
+starts Backfill (`claude-code-action` refuses to run on a `push` event). So an
+Item usually has its Description within a minute of being Captured and nothing
+has to be awake.
 `gh` and `node` are preinstalled on the runner and `gh` authenticates from the
 per-run `GITHUB_TOKEN`, so this same script runs there unmodified.
 

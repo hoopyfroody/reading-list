@@ -77,8 +77,9 @@ Open the site in Chrome on Android and install it to the home screen. The
 Share Target only appears in the system share sheet once the PWA is installed.
 Sharing a page then Captures URL and Title in two taps. The Description
 arrives about a minute later: the Capture commits `links.md`, and that commit
-triggers `.github/workflows/backfill.yml` in the data repo, which Backfills it
-without the Mac being involved.
+triggers `.github/workflows/captured.yml` in the data repo, which in turn
+triggers `backfill.yml`, which Backfills it without the Mac being involved.
+The relay exists because `claude-code-action` refuses to run on a `push`.
 
 ### 5. The Skill
 
