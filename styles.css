@@ -190,54 +190,6 @@ h1 {
   }
 }
 
-/* ── The queue ──────────────────────────────────────────────────────────── */
-/* Pending ops, in the vocabulary the app actually uses. You can always tell
-   "saved" from "saved here, not yet pushed". */
-
-.queue {
-  margin: 0;
-  padding: 0.5rem 0 0.75rem;
-  list-style: none;
-  border-bottom: 1px solid var(--rule);
-}
-
-.queue li {
-  display: flex;
-  gap: 0.5rem;
-  align-items: baseline;
-  padding: 0.15rem 0;
-  color: var(--ink-soft);
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  animation: slide-in 0.22s ease-out;
-}
-
-.queue li .op {
-  color: var(--ink);
-  font-weight: 600;
-  min-width: 4.25rem;
-}
-
-.queue li .target {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.queue li.settled {
-  color: var(--ink-faint);
-  text-decoration: line-through;
-  opacity: 0;
-  transition: opacity 0.4s ease 0.15s;
-}
-
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(-0.25rem);
-  }
-}
-
 /* ── Sections ───────────────────────────────────────────────────────────── */
 
 .section-heading {

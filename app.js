@@ -26,7 +26,6 @@ const dom = {
   status: el('status'),
   statusText: el('status-text'),
   dot: document.querySelector('.dot'),
-  queue: el('queue'),
   fileLine: el('file-line'),
   template: el('item-template'),
   captureDialog: el('capture-dialog'),
@@ -104,7 +103,6 @@ async function flush() {
     state.syncedAt = Date.now();
     state.ops = queue.settle(pushing);
     cache.set(state.remote, state.sha);
-    markSettled(pushing);
     setSync(state.ops.length ? 'pending' : 'synced');
   } catch (error) {
     fail(error);
@@ -154,7 +152,6 @@ function render() {
 
   dom.todosLink.hidden = !settings.configured();
 
-  renderQueue();
   renderStatus(ordered.length);
 }
 
@@ -184,42 +181,6 @@ function paint(list, items, starCount) {
 
     list.append(node);
   });
-}
-
-const OP_LABEL = {
-  add: 'capture',
-  setRead: 'read',
-  setStar: 'star',
-  remove: 'remove',
-};
-
-function renderQueue() {
-  dom.queue.hidden = state.ops.length === 0;
-  dom.queue.replaceChildren(
-    ...state.ops.map((operation) => {
-      const li = document.createElement('li');
-      li.dataset.op = operation.id;
-      const label = document.createElement('span');
-      label.className = 'op';
-      label.textContent =
-        operation.op === 'setRead' && !operation.read ? 'unread'
-        : operation.op === 'setStar' && !operation.star ? 'unstar'
-        : OP_LABEL[operation.op];
-      const target = document.createElement('span');
-      target.className = 'target';
-      target.textContent = displayHost(operation.url);
-      li.append(label, target);
-      return li;
-    }),
-  );
-}
-
-/** Let a pushed op visibly land before it leaves the ledger. */
-function markSettled(pushed) {
-  for (const operation of pushed) {
-    const node = dom.queue.querySelector(`[data-op="${operation.id}"]`);
-    node?.classList.add('settled');
-  }
 }
 
 function renderStatus(unreadCount) {
