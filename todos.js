@@ -29,7 +29,6 @@ const dom = {
   empty: el('empty'),
   statusText: el('status-text'),
   dot: document.querySelector('.dot'),
-  queue: el('queue'),
   fileLine: el('file-line'),
   template: el('todo-template'),
   form: el('new-todo-form'),
@@ -103,7 +102,6 @@ async function flush() {
     state.syncedAt = Date.now();
     state.ops = queue.settle(pushing);
     cache.set(state.remote, state.sha);
-    markSettled(pushing);
     setSync(state.ops.length ? 'pending' : 'synced');
   } catch (error) {
     fail(error);
@@ -144,7 +142,6 @@ function render() {
   dom.toggleDone.setAttribute('aria-expanded', String(state.showDone));
   dom.toggleDone.hidden = finished.length === 0 && !state.showDone;
 
-  renderQueue();
   renderStatus(live.length);
 }
 
@@ -189,34 +186,6 @@ function linkify(text) {
   }
   if (at < text.length) nodes.push(document.createTextNode(text.slice(at)));
   return nodes;
-}
-
-const OP_LABEL = { add: 'add', setDone: 'done', remove: 'remove' };
-
-function renderQueue() {
-  dom.queue.hidden = state.ops.length === 0;
-  dom.queue.replaceChildren(
-    ...state.ops.map((operation) => {
-      const li = document.createElement('li');
-      li.dataset.op = operation.id;
-      const label = document.createElement('span');
-      label.className = 'op';
-      label.textContent =
-        operation.op === 'setDone' && !operation.done ? 'undone' : OP_LABEL[operation.op];
-      const target = document.createElement('span');
-      target.className = 'target';
-      target.textContent = operation.text;
-      li.append(label, target);
-      return li;
-    }),
-  );
-}
-
-/** Let a pushed op visibly land before it leaves the ledger. */
-function markSettled(pushed) {
-  for (const operation of pushed) {
-    dom.queue.querySelector(`[data-op="${operation.id}"]`)?.classList.add('settled');
-  }
 }
 
 function renderStatus(liveCount) {
