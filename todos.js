@@ -67,6 +67,10 @@ function scheduleFlush(delay = 800) {
 }
 
 async function refresh() {
+  // The redirect at the top of this file runs once, at load. Another tab can
+  // forget the device while this one sits open, so the gate is checked again
+  // on every path that would reach the network.
+  if (!settings.configured()) return setSync('idle', 'Not connected');
   if (!navigator.onLine) return setSync('offline');
 
   setSync('syncing');
@@ -85,6 +89,7 @@ async function refresh() {
 
 async function flush() {
   if (state.flushing || !state.ops.length) return;
+  if (!settings.configured()) return setSync('idle', 'Not connected');
   if (!navigator.onLine) return setSync('offline');
 
   const pushing = state.ops.slice();
@@ -170,14 +175,17 @@ function linkify(text) {
   const nodes = [];
   let at = 0;
   for (const match of text.matchAll(/https?:\/\/[^\s<>"']+/gi)) {
+    // "read https://example.com/a, then sleep" — the comma ends the sentence,
+    // not the URL.
+    const href = match[0].replace(/[.,;:!?)\]]+$/, '');
     if (match.index > at) nodes.push(document.createTextNode(text.slice(at, match.index)));
     const link = document.createElement('a');
-    link.href = match[0];
+    link.href = href;
     link.target = '_blank';
     link.rel = 'noreferrer noopener';
-    link.textContent = match[0];
+    link.textContent = href;
     nodes.push(link);
-    at = match.index + match[0].length;
+    at = match.index + href.length;
   }
   if (at < text.length) nodes.push(document.createTextNode(text.slice(at)));
   return nodes;
@@ -218,7 +226,7 @@ function renderStatus(liveCount) {
     offline: state.ops.length ? `offline · ${state.ops.length} waiting` : 'offline',
     error: state.detail || 'sync failed',
     synced: `synced ${ago(state.syncedAt)}`,
-    idle: state.syncedAt ? `synced ${ago(state.syncedAt)}` : 'reading the Todos…',
+    idle: state.detail || (state.syncedAt ? `synced ${ago(state.syncedAt)}` : 'reading the Todos…'),
   }[state.sync];
 
   dom.dot.dataset.state = state.sync;

@@ -147,6 +147,29 @@ test('adding a Todo that is already Done resurrects it', () => {
   assert.deepEqual(todos, [{ text: 'Water the plants', done: false }]);
 });
 
+/* A file ticked by hand in the GitHub app comes back with a Done Todo still
+ * sitting above the live ones. The fold has to place against that, not against
+ * a tidy array it produced itself. */
+
+const HAND_TICKED = parseTodos(`# Todos
+
+- [x] A
+- [ ] B
+- [ ] C
+
+## Done
+`);
+
+test('an add still lands at the bottom of a hand-ticked file', () => {
+  const todos = foldTodo(HAND_TICKED, addTodo('D'));
+  assert.equal(serializeTodos(todos), '# Todos\n\n- [ ] B\n- [ ] C\n- [ ] D\n\n## Done\n\n- [x] A\n');
+});
+
+test('a Done still lands at the top of Done in a hand-ticked file', () => {
+  const todos = foldTodo(HAND_TICKED, setDone('B', true));
+  assert.equal(serializeTodos(todos), '# Todos\n\n- [ ] C\n\n## Done\n\n- [x] B\n- [x] A\n');
+});
+
 test('only add may create a Todo — setDone on a removed Todo no-ops', () => {
   assert.deepEqual(foldTodo([], setDone('Gone', true)), []);
   assert.deepEqual(foldTodo([], todoOp('remove', 'Gone')), []);

@@ -16,6 +16,7 @@ const SHELL = [
   './lib/normalize.js',
   './lib/markdown.js',
   './lib/fold.js',
+  './lib/title.js',
   './lib/text.js',
   './lib/todos.js',
   './lib/todo-fold.js',

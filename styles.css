@@ -501,10 +501,16 @@ h1 {
 
 /* ── Controls ───────────────────────────────────────────────────────────── */
 
-/* Some buttons are links: the Todos page, and the way back to the list. */
+/* Some buttons are links: the Todos page, and the way back to the list. An
+   author `display` beats the user agent's [hidden] rule, so say it again — the
+   Todos link is hidden until there is a token. */
 a.button {
   display: inline-block;
   text-decoration: none;
+}
+
+a.button[hidden] {
+  display: none;
 }
 
 .button {
