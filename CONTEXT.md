@@ -1,6 +1,6 @@
 # Reading List
 
-A single-user list of web pages to read later, captured from a Mac or an Android phone and readable on both. The interface is a static site on GitHub Pages; the list itself is a markdown file in a separate private GitHub repo.
+A single-user list of web pages to read later, captured from a Mac or an Android phone and readable on both. The interface is a static site on GitHub Pages; the list itself is a markdown file in a separate private GitHub repo. That repo also holds a second, unrelated document: the Todos.
 
 ## Language
 
@@ -19,14 +19,14 @@ The Items that are not yet Read. This is the default view and the thing the app 
 _Avoid_: Queue, inbox, backlog, unread list
 
 **Archive**:
-The Items that are Read. Retained indefinitely and hidden behind a deliberate toggle, so that "what did I read this year" remains answerable. The toggle that reveals the Archive is the only "show me the hidden ones" control in the app — Removed Items are not hidden, they do not exist.
+The Items that are Read. Retained indefinitely and hidden behind a deliberate toggle, so that "what did I read this year" remains answerable. Hiding is what happens to things you kept: Removed Items are not behind the toggle, because they do not exist. (Done Todos sit behind the same kind of toggle on their own page, for the same reason.)
 _Avoid_: History, done, completed, removed items, deleted items
 
 ### States and actions
 
 **Read**:
 The state of an Item you are finished with. A toggle, not a one-way door — an Item can be marked unread again. Marking Read moves an Item from the Reading List to the Archive; it never destroys it. Note the pull towards calling this "removing" — it does take the Item off the list you look at — but Remove is a different, destructive verb, so say Read.
-_Avoid_: Done, finished, completed, removed, archived (as a verb)
+_Avoid_: Finished, completed, removed, archived (as a verb), and **Done** — Done is the Todos' word, and lending it to Items is how Read starts drifting towards Remove
 
 **Remove**:
 Destroying an Item and any record that it existed. Deliberately distinct from marking it Read — Remove means "I don't want this *and* I don't want the history."
@@ -43,6 +43,18 @@ _Avoid_: Add, save, import, clip
 **Backfill**:
 Filling in Descriptions for Items that were Captured without one. Reconciles the two Capture paths after the fact.
 _Avoid_: Enrich, hydrate, sync metadata
+
+### The Todos
+
+**Todo**:
+A thing to do. Has no URL, and therefore is not an Item and is not on the Reading List — it lives in its own file, `todos.md`, behind its own page. Identity is its text. One line, no due date, no priority: a Todo is a sentence you wrote to yourself.
+_Avoid_: Task, reminder, chore, action item, ticket
+
+**Done**:
+The state of a Todo you have finished. A toggle, not a one-way door. Done Todos move below the Done heading and stay there, so "what did I get done this week" remains answerable. Reserved for Todos — an Item is never Done, it is Read.
+_Avoid_: Complete, finished, closed, ticked off, read
+
+Remove means the same for a Todo as for an Item, and is the same deliberate distinction: Done keeps the record, Remove destroys it.
 
 ### Item metadata
 

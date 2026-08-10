@@ -3,17 +3,23 @@
 // this cache — it comes from local storage, and the network is only ever
 // consulted through the contents API, which must not be cached at all.
 
-const VERSION = 'reading-list-v1';
+const VERSION = 'reading-list-v2';
 const SHELL = [
   './',
   './index.html',
   './add.html',
+  './todos.html',
   './styles.css',
   './app.js',
   './add.js',
+  './todos.js',
   './lib/normalize.js',
   './lib/markdown.js',
   './lib/fold.js',
+  './lib/text.js',
+  './lib/todos.js',
+  './lib/todo-fold.js',
+  './lib/documents.js',
   './lib/sync.js',
   './lib/github.js',
   './lib/local.js',

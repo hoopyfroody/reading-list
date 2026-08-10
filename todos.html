@@ -1,0 +1,84 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#eef0f3" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#10131a" media="(prefers-color-scheme: dark)" />
+<title>Todos</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="./icons/icon-192.png" />
+<link rel="stylesheet" href="./styles.css" />
+
+<a class="skip" href="#new-todo">Skip to the box</a>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <h1>Todos</h1>
+    <div class="masthead-actions">
+      <a href="./index.html" class="button button-quiet">Reading&nbsp;list</a>
+    </div>
+  </div>
+
+  <p class="ledger-line" id="status" aria-live="polite">
+    <span class="dot" data-state="idle"></span>
+    <span id="status-text">Reading the Todos…</span>
+  </p>
+
+  <!-- The queue: every action is an operation, held here until it lands. -->
+  <ol class="queue" id="queue" aria-label="Changes not yet pushed" hidden></ol>
+</header>
+
+<main>
+  <section id="list" aria-labelledby="list-heading">
+    <h2 class="section-heading" id="list-heading">
+      <span>Todos</span>
+      <span class="count" id="todo-count"></span>
+    </h2>
+    <ol class="items" id="todos"></ol>
+    <p class="empty" id="empty" hidden>Nothing to do. Type one below, or ask the Skill on the Mac.</p>
+
+    <!-- The box sits where the new Todo will appear: at the bottom, oldest first. -->
+    <form id="new-todo-form" class="new-todo">
+      <label class="sr" for="new-todo">A new Todo</label>
+      <input type="text" id="new-todo" name="text" autocomplete="off" placeholder="Something to do" />
+      <button type="submit" class="button button-primary">Add</button>
+    </form>
+    <p class="form-error" id="new-todo-error" hidden></p>
+  </section>
+
+  <section id="done-section" aria-labelledby="done-heading" hidden>
+    <h2 class="section-heading" id="done-heading">
+      <span>Done</span>
+      <span class="count" id="done-count"></span>
+    </h2>
+    <ol class="items" id="done-todos"></ol>
+  </section>
+
+  <p class="archive-toggle">
+    <button type="button" id="toggle-done" class="button button-quiet" aria-expanded="false">Show done</button>
+  </p>
+</main>
+
+<footer class="colophon">
+  <span id="file-line" class="mono"></span>
+</footer>
+
+<template id="todo-template">
+  <li class="item todo">
+    <div class="gutter">
+      <button type="button" class="tick" aria-pressed="false">
+        <span aria-hidden="true">✓</span>
+        <span class="sr">Done</span>
+      </button>
+    </div>
+    <div class="body">
+      <p class="todo-text"></p>
+      <div class="actions">
+        <button type="button" class="button button-quiet" data-action="done"></button>
+        <button type="button" class="button button-quiet" data-action="remove">Remove</button>
+      </div>
+    </div>
+  </li>
+</template>
+
+<script type="module" src="./todos.js"></script>

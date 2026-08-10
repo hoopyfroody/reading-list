@@ -6,8 +6,12 @@ import { parse } from './lib/markdown.js';
 import { foldAll, op } from './lib/fold.js';
 import { commit } from './lib/sync.js';
 import { githubTransport, AuthError } from './lib/github.js';
-import { settings, queue, cache } from './lib/local.js';
+import { settings, queueFor, cacheFor, forgetDevice } from './lib/local.js';
+import { LINKS } from './lib/documents.js';
 import { displayHost, normalizeUrl } from './lib/normalize.js';
+
+const queue = queueFor(LINKS);
+const cache = cacheFor(LINKS);
 
 const el = (id) => document.getElementById(id);
 
@@ -32,6 +36,7 @@ const dom = {
   settingsDialog: el('settings-dialog'),
   settingsForm: el('settings-form'),
   settingsError: el('settings-error'),
+  todosLink: el('todos-link'),
 };
 
 const state = {
@@ -50,7 +55,7 @@ const state = {
 const view = () => foldAll(state.remote, state.ops);
 
 function transport() {
-  return githubTransport(settings.get());
+  return githubTransport(settings.get(), LINKS);
 }
 
 function act(operation) {
@@ -93,7 +98,7 @@ async function flush() {
   setSync('syncing');
 
   try {
-    const result = await commit(transport(), pushing);
+    const result = await commit(transport(), pushing, { document: LINKS });
     state.remote = result.items;
     state.sha = result.sha;
     state.syncedAt = Date.now();
@@ -146,6 +151,8 @@ function render() {
   dom.toggleArchive.textContent = state.showArchive ? 'Hide archive' : 'Show archive';
   dom.toggleArchive.setAttribute('aria-expanded', String(state.showArchive));
   dom.toggleArchive.hidden = archived.length === 0 && !state.showArchive;
+
+  dom.todosLink.hidden = !settings.configured();
 
   renderQueue();
   renderStatus(ordered.length);
@@ -216,7 +223,6 @@ function markSettled(pushed) {
 }
 
 function renderStatus(unreadCount) {
-  const { path } = settings.get();
   const pieces = [];
 
   if (!settings.configured()) {
@@ -226,7 +232,7 @@ function renderStatus(unreadCount) {
     return;
   }
 
-  pieces.push(path);
+  pieces.push(LINKS.path);
   pieces.push(`${unreadCount} to read`);
 
   const phrase = {
@@ -243,7 +249,7 @@ function renderStatus(unreadCount) {
   dom.statusText.textContent = pieces.join(' · ');
 
   const s = settings.get();
-  dom.fileLine.textContent = `${s.owner}/${s.repo}/${s.path} @ ${s.branch}`;
+  dom.fileLine.textContent = `${s.owner}/${s.repo}/${LINKS.path} @ ${s.branch}`;
 }
 
 function ago(at) {
@@ -399,7 +405,6 @@ function openSettings() {
   const current = settings.get();
   el('settings-owner').value = current.owner;
   el('settings-repo').value = current.repo;
-  el('settings-path').value = current.path;
   el('settings-branch').value = current.branch;
   el('settings-token').value = current.token;
   dom.settingsError.hidden = true;
@@ -413,7 +418,6 @@ dom.settingsForm.addEventListener('submit', () => {
   settings.set({
     owner: String(data.get('owner')).trim(),
     repo: String(data.get('repo')).trim(),
-    path: String(data.get('path')).trim(),
     branch: String(data.get('branch')).trim(),
     token: String(data.get('token')).trim(),
   });
@@ -431,9 +435,7 @@ el('forget-device').addEventListener('click', () => {
     button.textContent = 'Forget token and cache?';
     return;
   }
-  settings.clear();
-  cache.clear();
-  queue.set([]);
+  forgetDevice();
   state.remote = [];
   state.ops = [];
   state.sha = null;

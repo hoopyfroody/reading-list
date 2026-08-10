@@ -28,6 +28,11 @@
       "name": "Capture a page",
       "short_name": "Capture",
       "url": "./?capture=1"
+    },
+    {
+      "name": "Todos",
+      "short_name": "Todos",
+      "url": "./todos.html"
     }
   ]
 }

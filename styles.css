@@ -423,7 +423,89 @@ h1 {
   margin: 1.75rem 0 0;
 }
 
+/* ── Todos ──────────────────────────────────────────────────────────────── */
+
+/* The tick is the Todo's Star: the one thing in the gutter, and the gesture
+   the whole page is for. */
+.tick {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: -0.35rem;
+  padding: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  background: none;
+  color: transparent;
+  font-size: 0.85rem;
+  line-height: 1.6rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tick:hover {
+  color: var(--ink-faint);
+  border-color: var(--ink-faint);
+}
+
+.tick[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tick:active {
+  transform: scale(0.86);
+}
+
+.todo-text {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* A URL inside a Todo is made clickable here, not stored as a link — it should
+   read as part of the sentence, not as a title. */
+.todo-text a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.14em;
+  text-decoration-thickness: 1px;
+}
+
+.todo-text a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.item.done .todo-text {
+  color: var(--ink-soft);
+  text-decoration: line-through;
+  text-decoration-color: var(--rule-strong);
+}
+
+/* The box sits where the new Todo will appear — at the bottom, because the
+   list runs oldest first and the thing you are dodging lives down here. */
+.new-todo {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0 0;
+}
+
+.new-todo input {
+  flex: 1;
+}
+
 /* ── Controls ───────────────────────────────────────────────────────────── */
+
+/* Some buttons are links: the Todos page, and the way back to the list. */
+a.button {
+  display: inline-block;
+  text-decoration: none;
+}
 
 .button {
   appearance: none;
@@ -556,8 +638,7 @@ textarea {
 }
 
 #capture-url,
-#settings-token,
-#settings-path {
+#settings-token {
   font-family: var(--mono);
   font-size: 0.85rem;
 }

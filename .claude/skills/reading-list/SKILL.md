@@ -18,11 +18,12 @@ node .claude/skills/reading-list/list.mjs <command>
 
 ## Before anything else
 
-The script needs to know which private repo holds the list:
+The script needs to know which private repo holds the list. The file names
+inside it are fixed — the list is always `links.md`:
 
 ```bash
 node .claude/skills/reading-list/list.mjs where            # shows it
-node .claude/skills/reading-list/list.mjs where me/reading-list-data links.md
+node .claude/skills/reading-list/list.mjs where me/reading-list-data
 ```
 
 If `gh` is missing or unauthenticated the script says so. The fix is
@@ -135,8 +136,16 @@ it forever in the Archive; Remove does not. Never run `remove` because the user
 said they finished something — confirm first if the wording is at all
 ambiguous.
 
+## Not this skill
+
+A Todo — "call the dentist" — is not an Item and does not belong in the list.
+It has no URL, it lives in `todos.md`, and it has its own skill:
+`.claude/skills/todos`. If the user asks for both in one breath, use both.
+
 ## Vocabulary
 
 Use the app's words when you talk to the user: Item, Capture, Backfill, Read,
 Remove, Star, Reading List, Archive, Description, Title. Say "Captured", not
-"added" or "saved". Say "marked Read", not "removed" or "done".
+"added" or "saved". Say "marked Read", not "removed" or "done" — Done is the
+Todos' word, and keeping it out of here is what keeps Read distinct from
+Remove.

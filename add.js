@@ -6,8 +6,12 @@
 import { op } from './lib/fold.js';
 import { commit } from './lib/sync.js';
 import { githubTransport, AuthError } from './lib/github.js';
-import { settings, queue, cache } from './lib/local.js';
+import { settings, queueFor, cacheFor } from './lib/local.js';
+import { LINKS } from './lib/documents.js';
 import { displayHost, firstUrlIn } from './lib/normalize.js';
+
+const queue = queueFor(LINKS);
+const cache = cacheFor(LINKS);
 
 const params = new URLSearchParams(location.search);
 const statusText = document.getElementById('status-text');
@@ -78,7 +82,7 @@ async function push() {
 
   const pushing = queue.get();
   try {
-    const result = await commit(githubTransport(settings.get()), pushing);
+    const result = await commit(githubTransport(settings.get(), LINKS), pushing, { document: LINKS });
     queue.settle(pushing);
     cache.set(result.items, result.sha);
     dot.dataset.state = 'synced';
@@ -113,7 +117,7 @@ undoButton.addEventListener('click', async () => {
     return;
   }
   try {
-    const result = await commit(githubTransport(settings.get()), [undoOp]);
+    const result = await commit(githubTransport(settings.get(), LINKS), [undoOp], { document: LINKS });
     queue.settle([undoOp]);
     cache.set(result.items, result.sha);
   } catch {

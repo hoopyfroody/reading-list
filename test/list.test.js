@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 
 import { normalizeUrl, firstUrlIn } from '../lib/normalize.js';
 import { parse, serialize } from '../lib/markdown.js';
-import { fold, foldAll, op } from '../lib/fold.js';
+import { fold, foldAll, op, messageFor } from '../lib/fold.js';
 import { tidyTitle } from '../lib/title.js';
-import { commit, StaleError, messageFor } from '../lib/sync.js';
+import { commit, StaleError } from '../lib/sync.js';
 
 /* ── Normalized URL is identity ─────────────────────────────────────────── */
 
